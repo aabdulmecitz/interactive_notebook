@@ -68,9 +68,9 @@ let activeStatsInterval = null;
 
 // Helper: Extract Video ID
 function extractVideoId(url) {
-    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const regExp = /^.*(?:(?:youtu\.be\/)|(?:v\/)|(?:vi\/)|(?:u\/\w\/)|(?:embed\/)|(?:live\/)|(?:watch\?))\??v?=?([^#&?]*).*/;
     const match = url.match(regExp);
-    return (match && match[7].length === 11) ? match[7] : null;
+    return (match && match[1].length === 11) ? match[1] : null;
 }
 
 // API: Connect to Stream
