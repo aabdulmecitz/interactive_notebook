@@ -61,7 +61,13 @@ const TabletScreen = ({ messages, onPenMove }) => {
     useEffect(() => {
         if (!currentMessage) return;
 
-        const textToType = currentMessage.message || "";
+        let textToType = currentMessage.message || "";
+
+        // HARD LIMIT: 38 Chars to prevent wrapping
+        if (textToType.length > 38) {
+            textToType = textToType.substring(0, 38) + "...";
+        }
+
         let charIndex = 0;
         const speed = 30;
 
@@ -126,9 +132,21 @@ const TabletScreen = ({ messages, onPenMove }) => {
         if (!cursorRef.current || !onPenMove) return;
         const rect = cursorRef.current.getBoundingClientRect();
 
+        // Simulate Handwriting Vertical Movement (Jitter)
+        // Alternate up/down + random noise
+        const strokeCycle = typingLine.length % 4; // 0, 1, 2, 3
+        let jitterY = 0;
+        if (strokeCycle === 0) jitterY = -4; // Up
+        else if (strokeCycle === 1) jitterY = -2;
+        else if (strokeCycle === 2) jitterY = 2; // Down
+        else jitterY = 4;
+
+        // Add a bit of random chaos
+        jitterY += (Math.random() * 2 - 1);
+
         onPenMove({
             x: rect.left + calX,
-            y: rect.top + calY,
+            y: rect.top + calY + jitterY,
             isHidden: false,
             duration: '30ms',       // Ultra fast matching typing speed
             easing: 'linear',       // Precise
@@ -150,12 +168,12 @@ const TabletScreen = ({ messages, onPenMove }) => {
             {/* CONDITIONAL CLASS: glitch-active when clearing */}
             <div className={`flex-1 overflow-hidden flex flex-col justify-start pt-1 text-green-400 text-neon-green font-caveat ${isClearing ? 'glitch-active' : ''}`}>
                 {completedLines.map((line, idx) => (
-                    <div key={idx} className="text-lg md:text-xl leading-6 mb-0.5 opacity-90 break-words font-bold">
+                    <div key={idx} className="text-lg md:text-xl leading-6 mb-0.5 opacity-90 truncate font-bold">
                         {line}
                     </div>
                 ))}
 
-                <div className="text-lg md:text-xl leading-6 font-bold break-words min-h-[1.5rem]">
+                <div className="text-lg md:text-xl leading-6 font-bold truncate min-h-[1.5rem]">
                     {typingLine}
                     {/* Cursor can remain or be removed/changed for handwriting style */}
                     <span ref={cursorRef} className="opacity-0">|</span>
