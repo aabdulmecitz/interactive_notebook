@@ -235,6 +235,36 @@ const TabletScreen = ({ messages, onPenMove }) => {
             .wet-char {
                 animation: wetInkAnim 0.6s ease-out forwards;
             }
+
+            /* CHAOTIC GLITCH EFFECTS */
+            @keyframes glitch-line-chaos {
+                0% { transform: translate(0,0); opacity: 1; }
+                20% { transform: translate(-10px, 2px) skew(10deg); color: red; text-shadow: 2px 0 blue; }
+                40% { transform: translate(15px, -5px) skew(-20deg); color: blue; text-shadow: -2px 0 red; opacity: 0.5; }
+                60% { transform: translate(-5px, 0); filter: blur(2px); }
+                80% { transform: translate(5px, 5px) scale(1.1); color: white; opacity: 0.8; }
+                100% { transform: translate(0,0); opacity: 1; }
+            }
+
+            @keyframes glitch-container-wipe {
+                0% { opacity: 1; transform: scale(1); filter: hue-rotate(0deg); }
+                30% { opacity: 1; transform: scale(1.02) skew(5deg); filter: hue-rotate(90deg) contrast(2); }
+                70% { opacity: 0.5; transform: scale(0.95) skew(-5deg) translate(-20px, 0); filter: invert(1); }
+                90% { opacity: 0; transform: scale(0.1) skew(50deg); }
+                100% { opacity: 0; transform: scale(0); }
+            }
+
+            .glitch-active {
+                animation: glitch-container-wipe 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+            }
+            
+            /* Apply Chaos to individual lines when parent is glitching */
+            .glitch-active > div {
+                animation: glitch-line-chaos 0.2s steps(2) infinite;
+            }
+            /* Randomize delays slightly for organic chaos */
+            .glitch-active > div:nth-child(even) { animation-duration: 0.25s; animation-direction: reverse; }
+            .glitch-active > div:nth-child(3n) { animation-delay: 0.1s; }
         `}</style>
             {/* CONDITIONAL CLASS: glitch-active when clearing */}
             <div className={`flex-1 overflow-hidden flex flex-col justify-start pt-1 text-cyan-400 text-neon-cyan font-caveat ${isClearing ? 'glitch-active' : ''}`}>
