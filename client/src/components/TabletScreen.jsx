@@ -8,6 +8,12 @@ const TabletScreen = ({ messages, onPenMove }) => {
     const [currentMessage, setCurrentMessage] = useState(null);
     const [typingLine, setTypingLine] = useState('');
 
+    // PAGE CLEAR STATE
+    const [isClearing, setIsClearing] = useState(false);
+
+    // RE-ENABLE CALIBRATION (New defaults for smaller pen) -- Removed in final, ensuring clean slate if needed
+    // ...
+
     const lastMsgIdRef = useRef(null);
     const cursorRef = useRef(null);
     const bottomRef = useRef(null);
@@ -28,14 +34,28 @@ const TabletScreen = ({ messages, onPenMove }) => {
         setQueue(prev => [...prev, latestMsg]);
     }, [messages]);
 
-    // 2. DISPATCHER
+    // 2. DISPATCHER (With Page Clear Logic)
     useEffect(() => {
-        if (!currentMessage && queue.length > 0) {
+        // Only dispatch if not typing, not clearing, and have messages
+        if (!currentMessage && queue.length > 0 && !isClearing) {
+
+            // CHECK PAGE LIMIT (12 Lines)
+            if (completedLines.length >= 12) {
+                setIsClearing(true);
+
+                // Wait for Glitch Animation (500ms) + Pen Parking (150ms)
+                setTimeout(() => {
+                    setCompletedLines([]); // Wipe Screen
+                    setIsClearing(false);  // Resume
+                }, 800); // Slightly longer than anim to ensure clean state
+                return;
+            }
+
             const next = queue[0];
             setQueue(prev => prev.slice(1));
             setCurrentMessage(next);
         }
-    }, [queue, currentMessage]);
+    }, [queue, currentMessage, isClearing, completedLines]);
 
     // 3. ANIMATOR
     useEffect(() => {
@@ -54,9 +74,8 @@ const TabletScreen = ({ messages, onPenMove }) => {
                 clearInterval(interval);
 
                 setCompletedLines(prev => {
-                    const newHistory = [...prev, textToType];
-                    if (newHistory.length > 12) return newHistory.slice(newHistory.length - 12);
-                    return newHistory;
+                    // Simply append, do not slice. The Dispatcher handles the clearing now.
+                    return [...prev, textToType];
                 });
 
                 setTypingLine('');
@@ -73,7 +92,8 @@ const TabletScreen = ({ messages, onPenMove }) => {
         const calX = 5;
         const calY = -160;
 
-        if (!currentMessage) {
+        // Park if no message OR if clearing
+        if (!currentMessage || isClearing) {
             // IDLE / PARKING STATE
             if (containerRef.current && onPenMove) {
                 const rect = containerRef.current.getBoundingClientRect();
@@ -114,9 +134,9 @@ const TabletScreen = ({ messages, onPenMove }) => {
             easing: 'linear',       // Precise
             blur: '0px'             // Sharp
         });
-    }, [typingLine, currentMessage, onPenMove]); // Depend on currentMessage too
+    }, [typingLine, currentMessage, isClearing, onPenMove]);
 
-    // Auto-scroll
+    // Auto-scroll (Disabled since we clear pages now, but keeping for mid-page safety)
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [completedLines, typingLine]);
@@ -133,7 +153,8 @@ const TabletScreen = ({ messages, onPenMove }) => {
             }
         `}</style>
 
-            <div className="flex-1 overflow-hidden flex flex-col justify-start pt-1 text-green-400 text-neon-green font-caveat">
+            {/* CONDITIONAL CLASS: glitch-active when clearing */}
+            <div className={`flex-1 overflow-hidden flex flex-col justify-start pt-1 text-green-400 text-neon-green font-caveat ${isClearing ? 'glitch-active' : ''}`}>
                 {completedLines.map((line, idx) => (
                     <div key={idx} className="text-xl md:text-2xl leading-tight mb-1 opacity-90 break-words font-bold">
                         {line}
