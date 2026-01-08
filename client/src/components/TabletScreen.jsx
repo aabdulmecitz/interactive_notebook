@@ -11,6 +11,9 @@ const TabletScreen = ({ messages, onPenMove }) => {
     // PAGE CLEAR STATE
     const [isClearing, setIsClearing] = useState(false);
 
+    // TRAVEL STATE (Sync Fix)
+    const [isTraveling, setIsTraveling] = useState(false);
+
     // Overflow Flag
     const overflowRef = useRef(false);
 
@@ -56,13 +59,21 @@ const TabletScreen = ({ messages, onPenMove }) => {
 
             const next = queue[0];
             setQueue(prev => prev.slice(1));
+
+            // START TRAVEL: Move pen first, then type
+            setIsTraveling(true);
             setCurrentMessage(next);
+
+            // Delay typing for 600ms to allow pen to arrive
+            setTimeout(() => {
+                setIsTraveling(false);
+            }, 600);
         }
     }, [queue, currentMessage, isClearing, completedLines]);
 
     // 3. ANIMATOR
     useEffect(() => {
-        if (!currentMessage) return;
+        if (!currentMessage || isTraveling) return; // Wait for travel to finish
 
         const textToType = currentMessage.message || "";
         // No hard limit. We rely on overflowRef now.
@@ -110,7 +121,7 @@ const TabletScreen = ({ messages, onPenMove }) => {
         }, speed);
 
         return () => clearInterval(interval);
-    }, [currentMessage]);
+    }, [currentMessage, isTraveling]); // Add isTraveling dependency
 
     // 4. PEN TRACKING (FINAL CALIBRATION + PARKING)
     useEffect(() => {
@@ -148,7 +159,6 @@ const TabletScreen = ({ messages, onPenMove }) => {
             return;
         }
 
-        // TYPING STATE
         if (!cursorRef.current || !onPenMove) return;
         const rect = cursorRef.current.getBoundingClientRect();
 
@@ -164,6 +174,20 @@ const TabletScreen = ({ messages, onPenMove }) => {
             }
         }
 
+        // TRAVELING STATE (New) - Smooth move to start position
+        if (isTraveling) {
+            onPenMove({
+                x: rect.left + calX,
+                y: rect.top + calY, // No jitter
+                isHidden: false,
+                duration: '500ms',  // Travel time
+                easing: 'ease-out', // Smooth arrival
+                blur: '4px'         // Slight motion blur
+            });
+            return;
+        }
+
+        // TYPING STATE (Jittery)
         // Simulate Handwriting Vertical Movement (Jitter)
         // Alternate up/down + random noise
         const strokeCycle = typingLine.length % 4; // 0, 1, 2, 3
@@ -184,7 +208,7 @@ const TabletScreen = ({ messages, onPenMove }) => {
             easing: 'linear',       // Precise
             blur: '0px'             // Sharp
         });
-    }, [typingLine, currentMessage, isClearing, onPenMove]);
+    }, [typingLine, currentMessage, isClearing, isTraveling, onPenMove]);
 
     return (
         <div ref={containerRef} className="w-full h-full flex flex-col justify-start px-2 py-2 relative">
@@ -220,13 +244,16 @@ const TabletScreen = ({ messages, onPenMove }) => {
                     </div>
                 ))}
 
-                <div className="text-lg md:text-xl leading-6 font-bold truncate min-h-[1.5rem]">
-                    {typingLine.split('').map((char, index) => (
-                        <span key={index} className="wet-char">{char}</span>
-                    ))}
-                    {/* Cursor can remain or be removed/changed for handwriting style */}
-                    <span ref={cursorRef} className="opacity-0">|</span>
-                </div>
+                {/* Only show typing line if we have space (less than 12 lines) */}
+                {completedLines.length < 12 && (
+                    <div className="text-lg md:text-xl leading-6 font-bold truncate min-h-[1.5rem]">
+                        {typingLine.split('').map((char, index) => (
+                            <span key={index} className="wet-char">{char}</span>
+                        ))}
+                        {/* Cursor can remain or be removed/changed for handwriting style */}
+                        <span ref={cursorRef} className="opacity-0">|</span>
+                    </div>
+                )}
             </div>
         </div>
     );
