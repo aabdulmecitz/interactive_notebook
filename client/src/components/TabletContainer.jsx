@@ -40,6 +40,34 @@ const TabletContainer = ({ messages, stats }) => {
             {/* PEN - z-index 50 (Top) */}
             <Pen position={penPosition} />
 
+            {/* LIVE DATA HUD - z-index 25 (Above text, below pen) */}
+            <div
+                className="absolute z-[25] flex justify-between items-start px-8 font-mono text-[10px] font-bold pointer-events-none opacity-80"
+                style={{
+                    top: '9%',        // Moved to TOP Bezel
+                    left: '12%',
+                    width: '76%',     // Wider to hug the corners
+                    color: 'rgba(0, 243, 255, 0.6)',
+                }}
+            >
+                <div className="flex flex-col items-center">
+                    <span className="scramble-text tracking-widest text-[8px] mb-[-2px]">VIEWERS</span>
+                    <span className="text-lg text-neon-cyan drop-shadow-[0_0_5px_rgba(0,243,255,0.8)]">
+                        {stats.viewers || 0}
+                    </span>
+                </div>
+
+                {/* Decorative Center Element */}
+                <div className="h-px w-8 bg-cyan-900/50 mt-2"></div>
+
+                <div className="flex flex-col items-center">
+                    <span className="scramble-text tracking-widest text-[8px] mb-[-2px]">SUBS</span>
+                    <span className="text-lg text-neon-cyan drop-shadow-[0_0_5px_rgba(0,243,255,0.8)]">
+                        {stats.subscribers || 0}
+                    </span>
+                </div>
+            </div>
+
         </div>
     );
 };
