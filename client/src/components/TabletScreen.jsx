@@ -90,7 +90,7 @@ const TabletScreen = ({ messages, onPenMove }) => {
     }, [completedLines, typingLine]);
 
     return (
-        <div className="w-full h-full flex flex-col justify-start px-12 py-8 font-mono relative">
+        <div className="w-full h-full flex flex-col justify-start px-2 py-2 font-mono relative">
             <style>{`
             .text-neon-green {
                 color: #00ff41;
@@ -98,7 +98,7 @@ const TabletScreen = ({ messages, onPenMove }) => {
             }
         `}</style>
 
-            <div className="flex-1 overflow-hidden flex flex-col justify-start pt-32 text-green-400 text-neon-green">
+            <div className="flex-1 overflow-hidden flex flex-col justify-start pt-1 text-green-400 text-neon-green">
                 {completedLines.map((line, idx) => (
                     <div key={idx} className="text-lg md:text-xl leading-tight mb-2 opacity-75 break-words">
                         {line}

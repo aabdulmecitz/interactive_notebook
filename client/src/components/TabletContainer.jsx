@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import TabletScreen from './TabletScreen';
 import Pen from './Pen';
 
@@ -7,19 +7,6 @@ const tabletImgPath = "/assets/tablet_bg.png";
 
 const TabletContainer = ({ messages, stats }) => {
     const [penPosition, setPenPosition] = useState({ x: -200, y: -200, isHidden: true });
-
-    // Debug State
-    const [debugMsg, setDebugMsg] = useState("Initializing...");
-    const [msgCount, setMsgCount] = useState(0);
-
-    useEffect(() => {
-        setMsgCount(messages.length);
-        if (messages.length > 0) {
-            setDebugMsg(`Last: ${messages[messages.length - 1].message}`);
-        } else {
-            setDebugMsg("Waiting for messages...");
-        }
-    }, [messages]);
 
     return (
         // Main Container
@@ -34,13 +21,14 @@ const TabletContainer = ({ messages, stats }) => {
             />
 
             {/* SCREEN AREA (TEXT) - z-index 20 (Middle) */}
+            {/* FINAL CALIBRATED VALUES: Top: 24.5%, Left: 14.5%, W: 72%, H: 54.5% */}
             <div
                 className="absolute z-[20] overflow-hidden"
                 style={{
-                    top: '15%',
-                    left: '10%',
-                    width: '80%',
-                    height: '70%',
+                    top: '24.5%',
+                    left: '14.5%',
+                    width: '72%',
+                    height: '54.5%',
                 }}
             >
                 <TabletScreen
@@ -51,12 +39,6 @@ const TabletContainer = ({ messages, stats }) => {
 
             {/* PEN - z-index 50 (Top) */}
             <Pen position={penPosition} />
-
-            {/* DEBUG OVERLAY - z-index 100 (Topmost) - Keeping small debug for user assurance */}
-            <div className="absolute top-0 left-0 z-[100] bg-black/90 p-2 text-green-400 font-mono text-xs opacity-50 hover:opacity-100 pointer-events-auto border-b border-r border-green-500">
-                <p className="font-bold">SYSTEM READY</p>
-                <p>MSG: {msgCount}</p>
-            </div>
 
         </div>
     );
