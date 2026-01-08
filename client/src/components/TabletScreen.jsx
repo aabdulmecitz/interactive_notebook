@@ -11,6 +11,7 @@ const TabletScreen = ({ messages, onPenMove }) => {
     const lastMsgIdRef = useRef(null);
     const cursorRef = useRef(null);
     const bottomRef = useRef(null);
+    const containerRef = useRef(null);
 
     // 0. INITIAL STARTUP MESSAGE 
     useEffect(() => {
@@ -68,21 +69,35 @@ const TabletScreen = ({ messages, onPenMove }) => {
         return () => clearInterval(interval);
     }, [currentMessage]);
 
-    // 4. PEN TRACKING (FINAL CALIBRATION)
+    // 4. PEN TRACKING (FINAL CALIBRATION + PARKING)
     useEffect(() => {
+        // USER PROVIDED CALIBRATION (X: 5, Y: -160)
+        const calX = 5;
+        const calY = -160;
+
+        if (!currentMessage) {
+            // IDLE / PARKING STATE
+            if (containerRef.current && onPenMove) {
+                // Move completely off-screen to the right
+                onPenMove({
+                    x: window.innerWidth + 200,
+                    y: window.innerHeight / 2,
+                    isHidden: false
+                });
+            }
+            return;
+        }
+
+        // TYPING STATE
         if (!cursorRef.current || !onPenMove) return;
         const rect = cursorRef.current.getBoundingClientRect();
 
-        // USER PROVIDED CALIBRATION (X: 5, Y: -160)
-        const offsetX = 5;
-        const offsetY = -160;
-
         onPenMove({
-            x: rect.left + offsetX,
-            y: rect.top + offsetY,
+            x: rect.left + calX,
+            y: rect.top + calY,
             isHidden: false
         });
-    }, [typingLine]);
+    }, [typingLine, currentMessage, onPenMove]); // Depend on currentMessage too
 
     // Auto-scroll
     useEffect(() => {
@@ -90,7 +105,7 @@ const TabletScreen = ({ messages, onPenMove }) => {
     }, [completedLines, typingLine]);
 
     return (
-        <div className="w-full h-full flex flex-col justify-start px-2 py-2 font-mono relative">
+        <div ref={containerRef} className="w-full h-full flex flex-col justify-start px-2 py-2 font-mono relative">
             <style>{`
             .text-neon-green {
                 color: #00ff41;
