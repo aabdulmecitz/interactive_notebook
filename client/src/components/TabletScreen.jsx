@@ -125,9 +125,9 @@ const TabletScreen = ({ messages, onPenMove }) => {
 
     // 4. PEN TRACKING (FINAL CALIBRATION + PARKING)
     useEffect(() => {
-        // USER PROVIDED CALIBRATION (X: 5, Y: -160)
+        // USER PROVIDED CALIBRATION (X: 5, Y: -160 -> -155)
         const calX = 5;
-        const calY = -160;
+        const calY = -155;
 
         // Park if no message OR if clearing
         if (!currentMessage || isClearing) {

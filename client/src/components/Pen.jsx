@@ -5,8 +5,8 @@ const penImgPath = "/assets/hand_overlay.png";
 
 const Pen = ({ position }) => {
     // Motion Values for position
-    const x = useSpring(position.x, { stiffness: 400, damping: 20 }); // High stiffness for fast response
-    const y = useSpring(position.y, { stiffness: 400, damping: 20 });
+    const x = useSpring(position.x, { stiffness: 700, damping: 40 }); // Tighter spring
+    const y = useSpring(position.y, { stiffness: 700, damping: 40 });
 
     // Velocity-based Skew (Mock Motion Blur)
     const xVelocity = useVelocity(x);
