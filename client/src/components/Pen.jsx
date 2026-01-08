@@ -6,11 +6,14 @@ const penImgPath = "/assets/hand_overlay.png";
 const Pen = ({ position }) => {
     return (
         <div
-            className="fixed pointer-events-none z-50 transition-all duration-75 ease-linear will-change-transform"
+            className="fixed pointer-events-none z-50 will-change-transform"
             style={{
                 left: position.x,
                 top: position.y,
-                // No translation needed if we calculate the tip offset in the parent/screen
+                transitionProperty: 'left, top, filter',
+                transitionDuration: position.duration || '75ms',
+                transitionTimingFunction: position.easing || 'linear',
+                filter: position.blur ? `blur(${position.blur})` : 'none',
             }}
         >
             {/* Width set to 1500px to simulate a close-up hand view */}

@@ -13,12 +13,10 @@ const TabletScreen = ({ messages, onPenMove }) => {
     const bottomRef = useRef(null);
     const containerRef = useRef(null);
 
-    // 0. INITIAL STARTUP MESSAGE 
+    // 0. INITIAL STARTUP MESSAGE REMOVED
     useEffect(() => {
-        setQueue([{
-            id: 'init',
-            message: 'SYSTEM ONLINE... CONNECTED.'
-        }]);
+        // Empty on start
+        setQueue([]);
     }, []);
 
     // 1. INGESTION
@@ -45,7 +43,7 @@ const TabletScreen = ({ messages, onPenMove }) => {
 
         const textToType = currentMessage.message || "";
         let charIndex = 0;
-        const speed = 75;
+        const speed = 30;
 
         const interval = setInterval(() => {
             const currentText = textToType.slice(0, charIndex + 1);
@@ -78,11 +76,27 @@ const TabletScreen = ({ messages, onPenMove }) => {
         if (!currentMessage) {
             // IDLE / PARKING STATE
             if (containerRef.current && onPenMove) {
-                // Move completely off-screen to the right
+                const rect = containerRef.current.getBoundingClientRect();
+
+                // Calculate Tablet Dimensions based on known percentages
+                // Screen Width is 72% of Tablet Width
+                const tabletWidth = rect.width / 0.72;
+
+                // Screen Left is 14.5% of Tablet Width
+                // Tablet Left = Screen Left - (Tablet Width * 0.145)
+                const tabletLeft = rect.left - (tabletWidth * 0.145);
+
+                // Tablet Right Edge
+                const tabletRight = tabletLeft + tabletWidth;
+
+                // Park just outside the tablet right edge
                 onPenMove({
-                    x: window.innerWidth + 200,
-                    y: window.innerHeight / 2,
-                    isHidden: false
+                    x: tabletRight + 200,
+                    y: rect.bottom - 100 + calY, // Rest lower down
+                    isHidden: false,
+                    duration: '150ms',     // HYPER FAST exit
+                    easing: 'ease-in',     // Accelerate out
+                    blur: '20px'           // HEAVY motion blur
                 });
             }
             return;
@@ -95,7 +109,10 @@ const TabletScreen = ({ messages, onPenMove }) => {
         onPenMove({
             x: rect.left + calX,
             y: rect.top + calY,
-            isHidden: false
+            isHidden: false,
+            duration: '30ms',       // Ultra fast matching typing speed
+            easing: 'linear',       // Precise
+            blur: '0px'             // Sharp
         });
     }, [typingLine, currentMessage, onPenMove]); // Depend on currentMessage too
 
@@ -105,23 +122,27 @@ const TabletScreen = ({ messages, onPenMove }) => {
     }, [completedLines, typingLine]);
 
     return (
-        <div ref={containerRef} className="w-full h-full flex flex-col justify-start px-2 py-2 font-mono relative">
+        <div ref={containerRef} className="w-full h-full flex flex-col justify-start px-2 py-2 relative">
             <style>{`
+            .font-caveat {
+                font-family: 'Caveat', cursive;
+            }
             .text-neon-green {
                 color: #00ff41;
-                text-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
+                text-shadow: 0 0 2px rgba(0, 255, 65, 0.4); /* Less glow for handwriting opacity */
             }
         `}</style>
 
-            <div className="flex-1 overflow-hidden flex flex-col justify-start pt-1 text-green-400 text-neon-green">
+            <div className="flex-1 overflow-hidden flex flex-col justify-start pt-1 text-green-400 text-neon-green font-caveat">
                 {completedLines.map((line, idx) => (
-                    <div key={idx} className="text-lg md:text-xl leading-tight mb-2 opacity-75 break-words">
+                    <div key={idx} className="text-xl md:text-2xl leading-tight mb-1 opacity-90 break-words font-bold">
                         {line}
                     </div>
                 ))}
 
-                <div className="text-lg md:text-xl leading-tight font-bold break-words min-h-[3rem]">
+                <div className="text-xl md:text-2xl leading-tight font-bold break-words min-h-[2.5rem]">
                     {typingLine}
+                    {/* Cursor can remain or be removed/changed for handwriting style */}
                     <span ref={cursorRef} className="opacity-0">|</span>
                 </div>
 
