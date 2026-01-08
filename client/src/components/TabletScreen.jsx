@@ -192,13 +192,28 @@ const TabletScreen = ({ messages, onPenMove }) => {
             .font-caveat {
                 font-family: 'Caveat', cursive;
             }
-            .text-neon-green {
-                color: #00ff41;
-                text-shadow: 0 0 2px rgba(0, 255, 65, 0.4); 
+            .text-neon-cyan {
+                color: #00f3ff;
+                text-shadow: 0 0 2px rgba(0, 243, 255, 0.4), 0 0 8px rgba(0, 243, 255, 0.2); 
+            }
+            
+            @keyframes wetInkAnim {
+                0% {
+                    color: #ffffff;
+                    text-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 0 15px rgba(255, 255, 255, 0.6);
+                }
+                100% {
+                    color: #00f3ff;
+                    text-shadow: 0 0 2px rgba(0, 243, 255, 0.4), 0 0 8px rgba(0, 243, 255, 0.2);
+                }
+            }
+
+            .wet-char {
+                animation: wetInkAnim 0.6s ease-out forwards;
             }
         `}</style>
             {/* CONDITIONAL CLASS: glitch-active when clearing */}
-            <div className={`flex-1 overflow-hidden flex flex-col justify-start pt-1 text-green-400 text-neon-green font-caveat ${isClearing ? 'glitch-active' : ''}`}>
+            <div className={`flex-1 overflow-hidden flex flex-col justify-start pt-1 text-cyan-400 text-neon-cyan font-caveat ${isClearing ? 'glitch-active' : ''}`}>
                 {completedLines.map((line, idx) => (
                     <div key={idx} className="text-lg md:text-xl leading-6 mb-0.5 opacity-90 truncate font-bold">
                         {line}
@@ -206,7 +221,9 @@ const TabletScreen = ({ messages, onPenMove }) => {
                 ))}
 
                 <div className="text-lg md:text-xl leading-6 font-bold truncate min-h-[1.5rem]">
-                    {typingLine}
+                    {typingLine.split('').map((char, index) => (
+                        <span key={index} className="wet-char">{char}</span>
+                    ))}
                     {/* Cursor can remain or be removed/changed for handwriting style */}
                     <span ref={cursorRef} className="opacity-0">|</span>
                 </div>
