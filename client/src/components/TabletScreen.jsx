@@ -8,10 +8,6 @@ const TabletScreen = ({ messages, onPenMove }) => {
     const [currentMessage, setCurrentMessage] = useState(null);
     const [typingLine, setTypingLine] = useState('');
 
-    // FINAL CALIBRATED OFFSETS (User confirmed X:10, Y:-450)
-    const offsetX = 10;
-    const offsetY = -450;
-
     const lastMsgIdRef = useRef(null);
     const cursorRef = useRef(null);
     const bottomRef = useRef(null);
@@ -20,7 +16,7 @@ const TabletScreen = ({ messages, onPenMove }) => {
     useEffect(() => {
         setQueue([{
             id: 'init',
-            message: 'SYSTEM ONLINE... WAITING FOR INPUT...'
+            message: 'SYSTEM ONLINE... CONNECTED.'
         }]);
     }, []);
 
@@ -72,10 +68,14 @@ const TabletScreen = ({ messages, onPenMove }) => {
         return () => clearInterval(interval);
     }, [currentMessage]);
 
-    // 4. PEN TRACKING
+    // 4. PEN TRACKING (FINAL CALIBRATION)
     useEffect(() => {
         if (!cursorRef.current || !onPenMove) return;
         const rect = cursorRef.current.getBoundingClientRect();
+
+        // USER PROVIDED CALIBRATION (X: 5, Y: -160)
+        const offsetX = 5;
+        const offsetY = -160;
 
         onPenMove({
             x: rect.left + offsetX,
@@ -100,12 +100,12 @@ const TabletScreen = ({ messages, onPenMove }) => {
 
             <div className="flex-1 overflow-hidden flex flex-col justify-start pt-32 text-green-400 text-neon-green">
                 {completedLines.map((line, idx) => (
-                    <div key={idx} className="text-4xl md:text-5xl leading-tight mb-6 opacity-75 break-words">
+                    <div key={idx} className="text-lg md:text-xl leading-tight mb-2 opacity-75 break-words">
                         {line}
                     </div>
                 ))}
 
-                <div className="text-4xl md:text-5xl leading-tight font-bold break-words min-h-[5rem]">
+                <div className="text-lg md:text-xl leading-tight font-bold break-words min-h-[3rem]">
                     {typingLine}
                     <span ref={cursorRef} className="opacity-0">|</span>
                 </div>

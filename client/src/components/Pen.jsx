@@ -17,7 +17,13 @@ const Pen = ({ position }) => {
             <img
                 src={penImgPath}
                 alt="Pen"
-                className="w-[1500px] h-auto opacity-100 drop-shadow-2xl"
+                className="opacity-100 drop-shadow-2xl"
+                style={{
+                    width: '500px',
+                    maxWidth: 'none',
+                    height: 'auto',
+                    minWidth: '500px' // Force min width too
+                }}
                 onError={(e) => {
                     // e.target.style.display = 'none';
                 }}
