@@ -137,7 +137,16 @@ const TabletScreen = ({ messages, onPenMove }) => {
     }, [typingLine, currentMessage, isClearing, onPenMove]);
 
     return (
-        <div ref={containerRef}>
+        <div ref={containerRef} className="w-full h-full flex flex-col justify-start px-2 py-2 relative">
+            <style>{`
+            .font-caveat {
+                font-family: 'Caveat', cursive;
+            }
+            .text-neon-green {
+                color: #00ff41;
+                text-shadow: 0 0 2px rgba(0, 255, 65, 0.4); 
+            }
+        `}</style>
             {/* CONDITIONAL CLASS: glitch-active when clearing */}
             <div className={`flex-1 overflow-hidden flex flex-col justify-start pt-1 text-green-400 text-neon-green font-caveat ${isClearing ? 'glitch-active' : ''}`}>
                 {completedLines.map((line, idx) => (
