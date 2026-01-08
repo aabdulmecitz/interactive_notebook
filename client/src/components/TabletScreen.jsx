@@ -11,6 +11,9 @@ const TabletScreen = ({ messages, onPenMove }) => {
     // PAGE CLEAR STATE
     const [isClearing, setIsClearing] = useState(false);
 
+    // Overflow Flag
+    const overflowRef = useRef(false);
+
     // RE-ENABLE CALIBRATION (New defaults for smaller pen) -- Removed in final, ensuring clean slate if needed
     // ...
 
@@ -61,17 +64,34 @@ const TabletScreen = ({ messages, onPenMove }) => {
     useEffect(() => {
         if (!currentMessage) return;
 
-        let textToType = currentMessage.message || "";
+        const textToType = currentMessage.message || "";
+        // No hard limit. We rely on overflowRef now.
 
-        // HARD LIMIT: 38 Chars to prevent wrapping
-        if (textToType.length > 38) {
-            textToType = textToType.substring(0, 38) + "...";
-        }
+        // Reset overflow flag for new message
+        overflowRef.current = false;
 
         let charIndex = 0;
         const speed = 30;
 
         const interval = setInterval(() => {
+            // CHECK DYNAMIC OVERFLOW
+            if (overflowRef.current) {
+                clearInterval(interval);
+
+                // Truncate the current visible line
+                // Remove last few chars to fit ellipsis
+                setTypingLine(prev => {
+                    const truncated = prev.slice(0, -2) + "...";
+                    // Commit the truncated line
+                    setCompletedLines(c => [...c, truncated]);
+                    return ''; // Clear typing line for next step (which is ending)
+                });
+
+                setCurrentMessage(null);
+                setTypingLine('');
+                return;
+            }
+
             const currentText = textToType.slice(0, charIndex + 1);
             setTypingLine(currentText);
             charIndex++;
@@ -131,6 +151,18 @@ const TabletScreen = ({ messages, onPenMove }) => {
         // TYPING STATE
         if (!cursorRef.current || !onPenMove) return;
         const rect = cursorRef.current.getBoundingClientRect();
+
+        // CHECK FOR VISUAL OVERFLOW
+        if (containerRef.current) {
+            const containerRight = containerRef.current.getBoundingClientRect().right;
+            // Buffer of 20px
+            if (rect.right > containerRight - 20) {
+                overflowRef.current = true;
+                // Do not update pen position if overflowing to avoid going off-screen
+                // The Animator will catch this in next tick
+                return;
+            }
+        }
 
         // Simulate Handwriting Vertical Movement (Jitter)
         // Alternate up/down + random noise
