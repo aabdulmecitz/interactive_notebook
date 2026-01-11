@@ -49,7 +49,7 @@ const Pen = ({ position }) => {
             />
             {/* PEN TIP SPARK EFFECT */}
             <div
-                className="absolute top-[220px] left-[24px] w-3 h-3 rounded-full pointer-events-none mix-blend-screen z-[60]"
+                className="absolute top-[178px] left-[24px] w-3 h-3 rounded-full pointer-events-none mix-blend-screen z-[60]"
                 style={{
                     background: 'radial-gradient(circle, #ffffff 0%, #00f3ff 60%, transparent 100%)',
                     boxShadow: '0 0 10px #00f3ff, 0 0 20px #00f3ff, 0 0 40px #00f3ff',
