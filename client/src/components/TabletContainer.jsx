@@ -34,6 +34,7 @@ const TabletContainer = ({ messages, stats }) => {
                 <TabletScreen
                     messages={messages}
                     onPenMove={setPenPosition}
+                    inkSettings={inkSettings}
                 />
             </div>
 
