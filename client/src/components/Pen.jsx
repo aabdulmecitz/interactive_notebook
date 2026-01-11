@@ -47,6 +47,21 @@ const Pen = ({ position }) => {
                     minWidth: '500px'
                 }}
             />
+            {/* PEN TIP SPARK EFFECT */}
+            <div
+                className="absolute top-[220px] left-[24px] w-3 h-3 rounded-full pointer-events-none mix-blend-screen z-[60]"
+                style={{
+                    background: 'radial-gradient(circle, #ffffff 0%, #00f3ff 60%, transparent 100%)',
+                    boxShadow: '0 0 10px #00f3ff, 0 0 20px #00f3ff, 0 0 40px #00f3ff',
+                    animation: 'spark-pulse 0.05s infinite alternate'
+                }}
+            ></div>
+            <style>{`
+                @keyframes spark-pulse {
+                    0% { transform: scale(0.8) translate(-50%, -50%); opacity: 0.8; }
+                    100% { transform: scale(1.2) translate(-50%, -50%); opacity: 1; }
+                }
+            `}</style>
         </motion.div>
     );
 };

@@ -150,5 +150,13 @@ app.whenReady().then(() => {
 });
 
 app.on('before-quit', () => {
-    if (serverProcess) serverProcess.kill();
+    app.isQuiting = true; // Ensure flag is set
+    if (serverProcess) {
+        try {
+            const { exec } = require('child_process');
+            exec(`taskkill /pid ${serverProcess.pid} /f /t`);
+        } catch (e) {
+            console.error("Failed to kill server:", e);
+        }
+    }
 });

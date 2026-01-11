@@ -5,7 +5,7 @@ import tabletBg from '../assets/tablet_bg.png';
 
 const tabletImgPath = tabletBg;
 
-const TabletContainer = ({ messages, stats }) => {
+const TabletContainer = ({ messages, stats, inkSettings }) => {
     const [penPosition, setPenPosition] = useState({ x: -200, y: -200, isHidden: true });
 
     return (
