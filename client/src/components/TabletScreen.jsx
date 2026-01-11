@@ -180,17 +180,23 @@ const TabletScreen = ({ messages, onPenMove, inkSettings }) => {
             return;
         }
 
-        // JITTER
+        // JITTER - Enhanced for more visible "writing" motion
         const strokeCycle = activeLineText.length % 4;
         let jitterY = 0;
-        if (strokeCycle === 0) jitterY = -4;
-        else if (strokeCycle === 1) jitterY = -2;
-        else if (strokeCycle === 2) jitterY = 2;
-        else jitterY = 4;
-        jitterY += (Math.random() * 2 - 1);
+        // Increase amplitude from +/- 4 to +/- 8 for more "wave"
+        if (strokeCycle === 0) jitterY = -8;
+        else if (strokeCycle === 1) jitterY = -3;
+        else if (strokeCycle === 2) jitterY = 3;
+        else jitterY = 8;
+
+        // Add more random noise
+        jitterY += (Math.random() * 4 - 2);
+
+        // Add slight horizontal noise for organic feel
+        const jitterX = (Math.random() * 2 - 1);
 
         onPenMove({
-            x: rect.left + calX,
+            x: rect.left + calX + jitterX,
             y: rect.top + calY + jitterY,
             isHidden: false,
             duration: '30ms',
@@ -205,14 +211,14 @@ const TabletScreen = ({ messages, onPenMove, inkSettings }) => {
             <style>{`
             .font-caveat { font-family: 'Caveat', cursive; }
             
-            @keyframes wetInkAnim {
+                        @keyframes wetInkAnim {
                 0% {
                     color: var(--wet-color);
-                    text-shadow: 0 0 8px var(--wet-color), 0 0 15px var(--wet-color);
+                    text-shadow: 0 0 4px var(--wet-color), 0 0 10px var(--wet-color);
                 }
                 100% {
                     color: var(--dry-color);
-                    text-shadow: 0 0 2px var(--dry-color), 0 0 8px var(--dry-color);
+                    text-shadow: 0 0 1px var(--dry-color), 0 0 4px var(--dry-color);
                 }
             }
 
