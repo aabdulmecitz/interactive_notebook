@@ -1,0 +1,40 @@
+{
+    "name": "hackerpad-desktop",
+    "version": "1.0.0",
+    "description": "Desktop wrapper for Hackerpad",
+    "main": "electron/main.js",
+    "scripts": {
+        "start": "concurrently \"npm run server\" \"npm run client\" \"npm run electron:wait\"",
+        "server": "cd server && node index.js",
+        "client": "cd client && npm run dev",
+        "electron": "electron .",
+        "electron:wait": "wait-on http://localhost:5173 && npm run electron",
+        "build": "cd client && npm run build && electron-builder",
+        "dist": "electron-builder"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2",
+        "electron": "^28.1.0",
+        "electron-builder": "^24.9.1",
+        "wait-on": "^7.2.0"
+    },
+    "build": {
+        "appId": "com.hackerpad.desktop",
+        "productName": "Hackerpad",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "electron/**/*",
+            "server/**/*",
+            "client/dist/**/*",
+            "package.json"
+        ],
+        "extraResources": [
+            "server/**"
+        ],
+        "win": {
+            "target": "nsis"
+        }
+    }
+}
