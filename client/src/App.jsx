@@ -156,7 +156,7 @@ function App() {
         <div className="flex w-full h-screen bg-black overflow-hidden relative font-mono text-cyan-400 select-none">
 
             {/* LEFT SIDEBAR: INK CONTROLS */}
-            <div className="w-64 h-full border-r border-cyan-900/30 bg-black/90 p-4 flex flex-col gap-6 z-10 backdrop-blur-sm">
+            <div className="w-64 h-full border-r border-cyan-900/30 bg-black/90 p-4 flex flex-col gap-6 z-[100] backdrop-blur-sm">
                 <div className="text-xl font-bold tracking-widest border-b border-cyan-500 pb-2">SYS_CONFIG</div>
 
                 {/* CONNECTION MODULE */}
@@ -251,7 +251,7 @@ function App() {
             </div>
 
             {/* RIGHT SIDEBAR: MUSIC PLAYER & CHAT LOG */}
-            <div className="w-80 h-full border-l border-cyan-900/30 bg-black/90 p-4 flex flex-col gap-6 z-10 backdrop-blur-sm">
+            <div className="w-80 h-full border-l border-cyan-900/30 bg-black/90 p-4 flex flex-col gap-6 z-[100] backdrop-blur-sm">
 
                 {/* AUDIO MODULE (Expanded) */}
                 <div className="flex flex-col gap-2 border-b border-cyan-900/50 pb-4">
