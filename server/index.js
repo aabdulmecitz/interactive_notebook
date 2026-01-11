@@ -42,6 +42,11 @@ app.use('/public', express.static(path.join(__dirname, '../public')));
 // API: List Music
 app.get('/api/music', (req, res) => {
     const musicDir = path.join(__dirname, '../public/music');
+    // Ensure dir exists
+    if (!fs.existsSync(musicDir)) {
+        fs.mkdirSync(musicDir, { recursive: true });
+    }
+
     fs.readdir(musicDir, (err, files) => {
         if (err) {
             console.error("Music read error:", err);
@@ -54,6 +59,43 @@ app.get('/api/music', (req, res) => {
 
         res.json(musicFiles);
     });
+});
+
+// API: Open Music Folder (Desktop)
+app.post('/api/open-music', (req, res) => {
+    const musicDir = path.join(__dirname, '../public/music');
+    if (!fs.existsSync(musicDir)) {
+        fs.mkdirSync(musicDir, { recursive: true });
+    }
+
+    // Platform agnostic open
+    let command;
+    switch (process.platform) {
+        case 'win32': command = `start "" "${musicDir}"`; break;
+        case 'darwin': command = `open "${musicDir}"`; break;
+        default: command = `xdg-open "${musicDir}"`; break;
+    }
+
+    require('child_process').exec(command, (err) => {
+        if (err) {
+            console.error("Failed to open folder:", err);
+            return res.status(500).json({ success: false });
+        }
+        res.json({ success: true });
+    });
+});
+
+// API: Test Message
+app.post('/api/test-message', (req, res) => {
+    const testMsg = {
+        id: 'test-' + Date.now(),
+        author: 'SYSTEM_TEST',
+        thumbnail: 'https://via.placeholder.com/32',
+        message: 'This is a test message to verify the uplink.',
+        timestamp: new Date().toISOString()
+    };
+    io.emit('new_message', testMsg);
+    res.json({ success: true });
 });
 
 // Socket Connection

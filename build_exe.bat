@@ -4,9 +4,11 @@ echo Building Hackerpad Desktop Executable
 echo ==========================================
 
 echo [0/3] Cleaning up previous instances...
+taskkill /F /IM node.exe /T 2>nul
 taskkill /F /IM electron.exe /T 2>nul
 taskkill /F /IM "Hackerpad.exe" /T 2>nul
-taskkill /F /IM node.exe /T 2>nul
+taskkill /F /IM "electron-builder.exe" /T 2>nul
+taskkill /F /IM "app-builder.exe" /T 2>nul
 timeout /t 3 /nobreak >nul
 
 if exist "dist" (
