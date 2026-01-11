@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { motion, useSpring, useTransform, useMotionValue, useVelocity } from 'framer-motion';
+import handOverlay from '../assets/hand_overlay.png';
 
-const penImgPath = "/assets/hand_overlay.png";
+const penImgPath = handOverlay;
 
 const Pen = ({ position }) => {
     // Motion Values for position

@@ -28,10 +28,12 @@
             "electron/**/*",
             "server/**/*",
             "client/dist/**/*",
+            "public/**/*",
             "package.json"
         ],
         "extraResources": [
-            "server/**"
+            "server/**",
+            "public/**"
         ],
         "win": {
             "target": "nsis"

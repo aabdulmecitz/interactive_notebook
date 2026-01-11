@@ -1,7 +1,7 @@
-const { app, BrowserWindow, Tray, Menu, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, dialog } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
-const http = require('http');
+const fs = require('fs');
 
 let mainWindow;
 let tray;
@@ -10,6 +10,12 @@ let serverProcess;
 const isDev = !app.isPackaged;
 const SERVER_PORT = 3000;
 const CLIENT_PORT = 5173;
+
+// Logging for debug
+function log(msg) {
+    console.log(msg);
+    // Optional: write to file in userData if needed for deep debugging
+}
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -22,14 +28,25 @@ function createWindow() {
             contextIsolation: true,
         },
         autoHideMenuBar: true,
-        icon: path.join(__dirname, '../public/favicon.ico') // Assuming favicon exists, otherwise generic
+        icon: path.join(__dirname, '../public/favicon.ico')
     });
 
-    const startUrl = isDev
-        ? `http://localhost:${CLIENT_PORT}`
-        : `file://${path.join(__dirname, '../client/dist/index.html')}`;
-
-    mainWindow.loadURL(startUrl);
+    try {
+        if (isDev) {
+            mainWindow.loadURL(`http://localhost:${CLIENT_PORT}`);
+        } else {
+            // Check if file exists
+            const indexPath = path.join(__dirname, '../client/dist/index.html');
+            if (!fs.existsSync(indexPath)) {
+                dialog.showErrorBox('Initialization Error', `Client file not found at: ${indexPath}`);
+            }
+            mainWindow.loadFile(indexPath).catch(e => {
+                dialog.showErrorBox('Navigation Error', `Failed to load: ${e.message}`);
+            });
+        }
+    } catch (e) {
+        dialog.showErrorBox('Startup Error', e.message);
+    }
 
     mainWindow.on('close', (event) => {
         if (!app.isQuiting) {
@@ -41,65 +58,81 @@ function createWindow() {
 }
 
 function startServer() {
-    if (isDev) {
-        console.log('Dev mode: Server should be running separately or concurrently.');
+    if (isDev) return;
+
+    // Production Path Logic
+    // We expect 'server' to be inside 'resources' folder via extraResources
+    const serverScript = path.join(process.resourcesPath, 'server', 'index.js');
+    const serverCwd = path.join(process.resourcesPath, 'server');
+
+    // Fallback if not found (e.g. if packed in asar - though we prefer extraResources for node spawning)
+    if (!fs.existsSync(serverScript)) {
+        dialog.showErrorBox('Server Error', `Server script not found at: ${serverScript}`);
         return;
     }
 
-    const serverPath = path.join(__dirname, '../server/index.js'); // Adjust for built structure
-    // In production, we might need to bundle the server or reference it differently
-    // For now, assuming it's copied to resources
+    log(`Starting server from: ${serverScript} with cwd: ${serverCwd}`);
 
-    const serverExec = process.resourcesPath ? path.join(process.resourcesPath, 'server', 'index.js') : serverPath;
-
-    console.log('Starting server from:', serverExec);
-
-    // We need node to run this. In a real bundled app, we might bundle node or use pkg.
-    // For this simple "apply", assuming user has node or we bundle the script.
-    // Actually, simpler: Just spawn 'node' if it's available in env, or rely on internal logic.
-    // Best practice for packaged apps is usually to include a binary or use a relative path if 'node' is guaranteed.
-    // Let's try spawning 'node' for now.
-
-    serverProcess = spawn('node', [serverPath], {
-        cwd: path.join(__dirname, '../server'),
-        stdio: 'inherit'
+    // Spawn Node
+    // Note: This relies on 'node' being in system PATH. 
+    // For a fully robust standalone app, we would bundle a node executable or fork.
+    serverProcess = spawn('node', ['index.js'], {
+        cwd: serverCwd,
+        stdio: 'ignore' // 'inherit' might cause issues if no console attached in production
     });
 
     serverProcess.on('error', (err) => {
-        console.error('Failed to start server:', err);
+        dialog.showErrorBox('Server Error', `Failed to start server process: ${err.message}\nMake sure Node.js is installed.`);
     });
+
+    serverProcess.on('exit', (code, signal) => {
+        if (code !== 0 && code !== null) {
+            // Only show if it crashes, not on clean exit
+            // dialog.showErrorBox('Server Error', `Server exited with code ${code}`); 
+        }
+    });
+}
+
+function getIconPath() {
+    const iconCandidates = [
+        path.join(__dirname, '../public/favicon.ico'),
+        path.join(__dirname, '../client/public/assets/hand_overlay.png'),
+        path.join(__dirname, '../client/dist/assets/hand_overlay.png'),
+        path.join(process.resourcesPath, 'client/dist/assets/hand_overlay.png'),
+        path.join(__dirname, 'icon.png') // Fallback
+    ];
+
+    for (const candidate of iconCandidates) {
+        if (fs.existsSync(candidate)) return candidate;
+    }
+    return null;
 }
 
 function createTray() {
-    const iconPath = path.join(__dirname, '../public/favicon.ico'); // Placeholder
-    // Note: Creating a simple tray icon. If favicon doesn't exist/invalid format, this might fail silently or show empty.
-    // For safety, let's try to use a system icon or just generic if file missing? 
-    // Electron usually handles missing icons gracefully (shows empty space).
+    const iconPath = getIconPath();
+    if (!iconPath) {
+        // log("No icon found, skipping Tray");
+        return;
+    }
 
-    tray = new Tray(iconPath);
-    const contextMenu = Menu.buildFromTemplate([
-        {
-            label: 'Show App',
-            click: () => mainWindow.show()
-        },
-        {
-            label: 'Quit',
-            click: () => {
-                app.isQuiting = true;
-                app.quit();
-            }
-        }
-    ]);
-    tray.setToolTip('Hackerpad');
-    tray.setContextMenu(contextMenu);
-
-    tray.on('click', () => {
-        mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
-    });
+    try {
+        tray = new Tray(iconPath);
+        const contextMenu = Menu.buildFromTemplate([
+            { label: 'Show App', click: () => mainWindow.show() },
+            { label: 'Quit', click: () => { app.isQuiting = true; app.quit(); } }
+        ]);
+        tray.setToolTip('Hackerpad');
+        tray.setContextMenu(contextMenu);
+        tray.on('click', () => {
+            mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+        });
+    } catch (e) {
+        dialog.showErrorBox('Tray Error', `Failed to create tray: ${e.message}`);
+    }
 }
 
 app.whenReady().then(() => {
-    // startServer(); // Only needed if we want to manage server in prod. For dev, we use concurrently.
+    startServer();
     createTray();
     createWindow();
 

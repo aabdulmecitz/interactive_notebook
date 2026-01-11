@@ -3,6 +3,17 @@ echo ==========================================
 echo Building Hackerpad Desktop Executable
 echo ==========================================
 
+echo [0/3] Cleaning up previous instances...
+taskkill /F /IM electron.exe /T 2>nul
+taskkill /F /IM "Hackerpad.exe" /T 2>nul
+taskkill /F /IM node.exe /T 2>nul
+timeout /t 3 /nobreak >nul
+
+if exist "dist" (
+    echo Cleaning dist directory...
+    rd /s /q "dist" 2>nul
+)
+
 echo [1/3] Installing Dependencies...
 call npm install
 cd client
