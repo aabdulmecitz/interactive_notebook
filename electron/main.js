@@ -11,6 +11,12 @@ const isDev = !app.isPackaged;
 const SERVER_PORT = 3000;
 const CLIENT_PORT = 5173;
 
+// FORCE BACKGROUND RENDERING (Vital for OBS Game Capture/Window Capture when occluded)
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
+
 // Logging for debug
 function log(msg) {
     console.log(msg);
@@ -26,6 +32,8 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
+            backgroundThrottling: false, // Keep audio/timers running in background
+            webSecurity: false // Optional: helps with local file loading issues sometimes
         },
         autoHideMenuBar: true,
         icon: path.join(__dirname, '../public/favicon.ico')
